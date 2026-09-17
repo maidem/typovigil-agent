@@ -1,0 +1,24 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Maidemde\TypovigilAgent\:
+    resource: '../Classes/*'
+
+  # The scheduler task is unserialized rather than built by the container, so it
+  # resolves the sender itself — which only works for a public service.
+  Maidemde\TypovigilAgent\Service\ReportSender:
+    public: true
+
+  Maidemde\TypovigilAgent\Service\PackageCollector:
+    public: true
+
+  # Backend routes on a public route are built via GeneralUtility::makeInstance
+  # rather than full container autowiring, so this needs to be public too.
+  Maidemde\TypovigilAgent\Controller\SetupController:
+    public: true
+
+  Maidemde\TypovigilAgent\Controller\ModuleController:
+    public: true

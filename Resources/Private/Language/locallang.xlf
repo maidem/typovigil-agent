@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="messages" date="2026-09-17T00:00:00Z" product-name="typovigil_agent">
+        <header/>
+        <body>
+            <trans-unit id="module.headline">
+                <source>TypoVigil Agent</source>
+            </trans-unit>
+            <trans-unit id="module.notAdmin">
+                <source>Admin access is required to change the agent configuration.</source>
+            </trans-unit>
+            <trans-unit id="module.status.configured">
+                <source>This installation reports to %1$s.</source>
+            </trans-unit>
+            <trans-unit id="module.status.neverSent">
+                <source>No report has been sent yet. Use "Send report now" to test the connection.</source>
+            </trans-unit>
+            <trans-unit id="module.status.notConfigured">
+                <source>Not configured yet. Enter the hub address and the access token shown once when the project was created in the hub.</source>
+            </trans-unit>
+            <trans-unit id="module.field.hubUrl">
+                <source>Hub URL</source>
+            </trans-unit>
+            <trans-unit id="module.field.hubUrl.description">
+                <source>Base address of the TypoVigil hub. Must use https.</source>
+            </trans-unit>
+            <trans-unit id="module.field.token">
+                <source>Access token</source>
+            </trans-unit>
+            <trans-unit id="module.field.token.description">
+                <source>Shown once in the hub when the project was created.</source>
+            </trans-unit>
+            <trans-unit id="module.button.save">
+                <source>Save</source>
+            </trans-unit>
+            <trans-unit id="module.button.sendNow">
+                <source>Send report now</source>
+            </trans-unit>
+            <trans-unit id="module.message.saved">
+                <source>Configuration saved.</source>
+            </trans-unit>
+            <trans-unit id="module.message.incomplete">
+                <source>Both hub URL and access token are required.</source>
+            </trans-unit>
+            <trans-unit id="module.message.insecureHub">
+                <source>The hub URL must use https, otherwise the access token would travel readable.</source>
+            </trans-unit>
+            <trans-unit id="module.message.sendSucceeded">
+                <source>Report sent, the hub accepted it.</source>
+            </trans-unit>
+            <trans-unit id="module.message.sendFailed">
+                <source>The report could not be sent. See the TYPO3 log for details.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
