@@ -37,6 +37,12 @@ Anschließend diese Installation verbinden, wahlweise:
 
 Zum Schluss unter **System → Planer** die Aufgabe *TypoVigil: send report* anlegen und täglich ausführen lassen.
 
+Der Planer selbst braucht einen laufenden Cronjob auf dem Server, sonst wird die Aufgabe nie ausgeführt. Ob einer läuft, zeigt im Planer-Modul der Button *Setup check*. In Container-Umgebungen ist er oft nicht vorhanden und muss eingerichtet werden:
+
+```
+* * * * * cd /var/www/html && php vendor/bin/typo3 scheduler:run
+```
+
 Die Hub-URL muss `https` verwenden (`http://localhost` ist für die lokale Entwicklung erlaubt). Über einfaches http verweigert der Agent den Versand, da der Bearer-Token sonst lesbar übertragen würde.
 
 ## Zeitpunkt der Übertragung
