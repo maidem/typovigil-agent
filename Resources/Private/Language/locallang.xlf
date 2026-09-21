@@ -18,6 +18,9 @@
             <trans-unit id="module.status.notConfigured">
                 <source>Not configured yet. Enter the hub address and the access token shown once when the project was created in the hub.</source>
             </trans-unit>
+            <trans-unit id="module.status.fromEnv">
+                <source>Hub URL and access token come from the environment (TYPOVIGIL_AGENT_HUB_URL / TYPOVIGIL_AGENT_TOKEN) and cannot be changed here — set them where this installation is deployed.</source>
+            </trans-unit>
             <trans-unit id="module.field.hubUrl">
                 <source>Hub URL</source>
             </trans-unit>
@@ -44,6 +47,9 @@
             </trans-unit>
             <trans-unit id="module.message.insecureHub">
                 <source>The hub URL must use https, otherwise the access token would travel readable.</source>
+            </trans-unit>
+            <trans-unit id="module.message.fromEnv">
+                <source>Hub URL and access token are set through the environment and cannot be changed here.</source>
             </trans-unit>
             <trans-unit id="module.message.sendSucceeded">
                 <source>Report sent, the hub accepted it.</source>

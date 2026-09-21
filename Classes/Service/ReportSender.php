@@ -90,11 +90,15 @@ final readonly class ReportSender
         try {
             $config = $this->extensionConfiguration->get('typovigil_agent');
         } catch (\Throwable) {
-            return null;
+            $config = [];
         }
 
-        $hubUrl = trim((string)($config['hubUrl'] ?? ''));
-        $token = trim((string)($config['token'] ?? ''));
+        // ENV first: config/system/settings.php (where the extension
+        // configuration lives) is rebuilt fresh from the image on every
+        // container deploy — values entered there are gone after the next
+        // one. The environment survives that.
+        $hubUrl = trim((string)(getenv('TYPOVIGIL_AGENT_HUB_URL') ?: ($config['hubUrl'] ?? '')));
+        $token = trim((string)(getenv('TYPOVIGIL_AGENT_TOKEN') ?: ($config['token'] ?? '')));
 
         if ($hubUrl === '' || $token === '') {
             return null;
