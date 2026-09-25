@@ -29,11 +29,19 @@ Die Versionsnummern stammen aus `Composer\InstalledVersions`, sofern verfügbar,
 
 Im Hub einen Datensatz *Überwachtes Projekt* anlegen. Der Zugriffstoken wird beim Speichern **einmalig** angezeigt — dann kopieren, der Hub speichert nur seinen Hash.
 
-Anschließend diese Installation verbinden, wahlweise:
+Ausschließlich über die Umgebung, als zwei Variablen auf der überwachten Installation:
 
-**Über den Setup-Link.** Der Hub bietet nach dem Anlegen des Projekts einen Link an. Diesen im Backend der überwachten Installation als Administrator öffnen, Hub-URL und Token werden automatisch eingetragen.
+```
+TYPOVIGIL_AGENT_HUB_URL=https://zentrale.example.org
+TYPOVIGIL_AGENT_TOKEN=<der kopierte Token>
+```
 
-**Von Hand.** Im Backend unter **Websites → TypoVigil Agent** Hub-URL und Token eintragen und speichern. Das Modul zeigt dort auch den aktuellen Verbindungsstatus und bietet mit *Bericht jetzt senden* einen Test der Verbindung.
+Kein Backend-Modul, kein Eintrag in der Extension-Konfiguration: Jedes hier
+überwachte Projekt läuft als Docker-Container, dessen `config/system` bei
+jedem Deploy frisch aus dem Image gebaut wird — ein dort eingetragener Wert
+wäre nach dem nächsten Deploy kommentarlos wieder weg. Ein solches Modul gab
+es früher; es wurde entfernt, weil es eine funktionierende Eingabe zeigte, die
+beim nächsten Deploy trotzdem verschwand.
 
 Zum Schluss unter **System → Planer** die Aufgabe *TypoVigil: send report* anlegen und täglich ausführen lassen.
 
@@ -49,25 +57,35 @@ Die Hub-URL muss `https` verwenden (`http://localhost` ist für die lokale Entwi
 
 - einmal täglich über die Planer-Aufgabe
 - unmittelbar nach dem Aktivieren oder Deaktivieren einer Extension, damit der Hub nach einem Update nicht bis zu einen Tag lang einen veralteten Stand zeigt
+- direkt nach einem Deploy, wenn der Docker-Entrypoint `typovigil-agent:report` aufruft — siehe unten. Nötig, weil ein reiner Versions-Bump eines bereits installierten Composer-Pakets (genau das, was ein von TypoVigil beauftragtes Update ist) weder aktiviert noch deaktiviert und daher keinen der beiden anderen Auslöser trifft
 
-Der änderungsgesteuerte Versand entfällt, wenn sich tatsächlich nichts geändert hat. Die Markierung „bereits gesendet“ wird erst geschrieben, nachdem der Hub den Empfang bestätigt hat — ein fehlgeschlagener Versand wird also erneut versucht statt stillschweigend vergessen.
+Der änderungsgesteuerte Versand (Aktivierung/Deaktivierung) entfällt, wenn sich tatsächlich nichts geändert hat. Die Markierung „bereits gesendet“ wird erst geschrieben, nachdem der Hub den Empfang bestätigt hat — ein fehlgeschlagener Versand wird also erneut versucht statt stillschweigend vergessen. `typovigil-agent:report` und die Planer-Aufgabe melden dagegen unbedingt, auch ohne Änderung — nur so zeigt der Hub verlässlich, ob eine Installation überhaupt noch erreichbar ist.
+
+### Sofort nach dem Deploy melden
+
+Im Docker-Entrypoint der überwachten Seite, direkt nach `extension:setup`:
+
+```bash
+php vendor/bin/typo3 typovigil-agent:report || true
+```
+
+`|| true` ist Pflicht: ein Backend, das gerade erst hochfährt oder noch keine Netzwerkverbindung hat, darf den Deploy nicht zum Scheitern bringen.
 
 ## Technische Details
 
 - **PackageCollector** — sammelt Core-Version und aktive Extensions, bevorzugt die von Composer aufgelösten Versionen aus `Composer\InstalledVersions`
 - **ReportSender** — sendet den Bericht per POST an `<hubUrl>/typovigil/report`, authentifiziert per Bearer-Token; merkt sich einen Hash des letzten Berichts in der `Registry`, um unveränderte Berichte zu überspringen
 - **SendReportTask** — die Planer-Aufgabe für den täglichen Versand
+- **SendReportCommand** — `typovigil-agent:report`, für den Aufruf aus dem Deploy-Entrypoint
 - **PackageChangeListener** — stößt den Versand an, sobald sich der Extension-Bestand ändert
-- **ModuleController** — das Backend-Modul für Konfiguration, Status und manuellen Versand
-- **SetupController** — nimmt den Setup-Link des Hubs entgegen und schreibt Hub-URL und Token in die Erweiterungskonfiguration
 
 ## Fehlersuche
 
-Der Button *Bericht jetzt senden* im Backend-Modul meldet das Ergebnis direkt zurück. Schlägt ein Versand fehl, stehen die Details im TYPO3-Log (`var/log/typo3_*.log`), protokolliert von `Maidemde.TypovigilAgent.Service.ReportSender`:
+`php vendor/bin/typo3 typovigil-agent:report` meldet das Ergebnis direkt auf der Kommandozeile. Schlägt ein Versand fehl, stehen die Details im TYPO3-Log (`var/log/typo3_*.log`), protokolliert von `Maidemde.TypovigilAgent.Service.ReportSender`:
 
 | Meldung | Ursache |
 | --- | --- |
-| `hubUrl or token not configured` | Konfiguration unvollständig — beide Felder ausfüllen |
+| `hubUrl or token not configured` | `TYPOVIGIL_AGENT_HUB_URL`/`TYPOVIGIL_AGENT_TOKEN` fehlen in der Umgebung |
 | `hubUrl must use https` | Einfaches http wird abgelehnt, https verwenden |
 | `401 Unauthorized` | Der Token passt nicht zum Projekt im Hub |
 | `report failed` | Hub nicht erreichbar — URL und Netzwerk prüfen |

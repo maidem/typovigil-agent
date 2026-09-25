@@ -1,5 +1,0 @@
-# cat=basic; type=string; label=Hub URL: Base address of the TypoVigil hub, e.g. https://typovigil.example.com
-hubUrl =
-
-# cat=basic; type=string; label=Access token: Shown once when the project was created in the hub
-token =

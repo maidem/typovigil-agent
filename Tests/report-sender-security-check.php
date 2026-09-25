@@ -3,9 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Checks the https-enforcement rule shared by ReportSender and SetupController:
- * a bearer token must never travel over plain http, except to localhost for
- * local development.
+ * Checks ReportSender's https-enforcement rule: a bearer token must never
+ * travel over plain http, except to localhost for local development.
  *
  * Run: php vendor/maidemde/typovigil-agent/Tests/report-sender-security-check.php
  */

@@ -15,14 +15,6 @@ services:
   Maidemde\TypovigilAgent\Service\PackageCollector:
     public: true
 
-  # Backend routes on a public route are built via GeneralUtility::makeInstance
-  # rather than full container autowiring, so this needs to be public too.
-  Maidemde\TypovigilAgent\Controller\SetupController:
-    public: true
-
-  Maidemde\TypovigilAgent\Controller\ModuleController:
-    public: true
-
   Maidemde\TypovigilAgent\Command\SendReportCommand:
     tags:
       - name: 'console.command'

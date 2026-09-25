@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maidemde\TypovigilAgent\Service;
 
 use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Registry;
 
@@ -23,7 +22,6 @@ final readonly class ReportSender
 
     public function __construct(
         private PackageCollector $collector,
-        private ExtensionConfiguration $extensionConfiguration,
         private RequestFactory $requestFactory,
         private Registry $registry,
         private LoggerInterface $logger,
@@ -87,18 +85,16 @@ final readonly class ReportSender
      */
     private function configuration(): ?array
     {
-        try {
-            $config = $this->extensionConfiguration->get('typovigil_agent');
-        } catch (\Throwable) {
-            $config = [];
-        }
-
-        // ENV first: config/system/settings.php (where the extension
-        // configuration lives) is rebuilt fresh from the image on every
-        // container deploy — values entered there are gone after the next
-        // one. The environment survives that.
-        $hubUrl = trim((string)(getenv('TYPOVIGIL_AGENT_HUB_URL') ?: ($config['hubUrl'] ?? '')));
-        $token = trim((string)(getenv('TYPOVIGIL_AGENT_TOKEN') ?: ($config['token'] ?? '')));
+        // ENV only: config/system/settings.php (where the extension
+        // configuration used to live) is rebuilt fresh from the image on
+        // every container deploy — a value entered there would be gone after
+        // the next one. There used to be a backend module and a one-click
+        // setup link for exactly that file; both were removed once every
+        // monitored instance turned out to run in a container, which made
+        // them a UI that quietly stopped doing anything after the first
+        // deploy.
+        $hubUrl = trim((string)getenv('TYPOVIGIL_AGENT_HUB_URL'));
+        $token = trim((string)getenv('TYPOVIGIL_AGENT_TOKEN'));
 
         if ($hubUrl === '' || $token === '') {
             return null;
@@ -114,9 +110,6 @@ final readonly class ReportSender
         return [$hubUrl, $token];
     }
 
-    /**
-     * Shared with SetupController, which validates the hub URL before it ever reaches here.
-     */
     public static function isSecureHubUrl(string $hubUrl): bool
     {
         if (str_starts_with($hubUrl, 'https://')) {
