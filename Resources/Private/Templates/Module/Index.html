@@ -30,41 +30,14 @@
         </f:else>
     </f:if>
 
-    <form method="post" action="{f:be.uri(route: 'site_typovigil_agent.save')}">
-        <div class="mb-3">
-            <label class="form-label" for="typovigil-hub-url"><f:translate extensionName="TypovigilAgent" key="module.field.hubUrl" /></label>
-            <input
-                type="url"
-                id="typovigil-hub-url"
-                name="hubUrl"
-                class="form-control"
-                value="{hubUrl}"
-                placeholder="https://typovigil.example.com"
-                required="required"
-            >
-            <div class="form-text"><f:translate extensionName="TypovigilAgent" key="module.field.hubUrl.description" /></div>
+    <f:if condition="{fromEnv}">
+        <div class="callout callout-info">
+            <p class="mb-0"><f:translate extensionName="TypovigilAgent" key="module.status.fromEnv" /></p>
         </div>
+    </f:if>
 
-        <div class="mb-3">
-            <label class="form-label" for="typovigil-token"><f:translate extensionName="TypovigilAgent" key="module.field.token" /></label>
-            <input
-                type="text"
-                id="typovigil-token"
-                name="agentToken"
-                class="form-control"
-                value="{token}"
-                autocomplete="off"
-                required="required"
-            >
-            <div class="form-text"><f:translate extensionName="TypovigilAgent" key="module.field.token.description" /></div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-            <core:icon identifier="actions-save" size="small" />
-            <f:translate extensionName="TypovigilAgent" key="module.button.save" />
-        </button>
-
-        <f:if condition="{isConfigured}">
+    <f:if condition="{fromEnv}">
+        <f:then>
             <a
                 href="{be:moduleLink(route: 'site_typovigil_agent', arguments: '{action: \'sendNow\'}')}"
                 class="btn btn-default"
@@ -72,8 +45,54 @@
                 <core:icon identifier="actions-refresh" size="small" />
                 <f:translate extensionName="TypovigilAgent" key="module.button.sendNow" />
             </a>
-        </f:if>
-    </form>
+        </f:then>
+        <f:else>
+            <form method="post" action="{f:be.uri(route: 'site_typovigil_agent.save')}">
+                <div class="mb-3">
+                    <label class="form-label" for="typovigil-hub-url"><f:translate extensionName="TypovigilAgent" key="module.field.hubUrl" /></label>
+                    <input
+                        type="url"
+                        id="typovigil-hub-url"
+                        name="hubUrl"
+                        class="form-control"
+                        value="{hubUrl}"
+                        placeholder="https://typovigil.example.com"
+                        required="required"
+                    >
+                    <div class="form-text"><f:translate extensionName="TypovigilAgent" key="module.field.hubUrl.description" /></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="typovigil-token"><f:translate extensionName="TypovigilAgent" key="module.field.token" /></label>
+                    <input
+                        type="text"
+                        id="typovigil-token"
+                        name="agentToken"
+                        class="form-control"
+                        value="{token}"
+                        autocomplete="off"
+                        required="required"
+                    >
+                    <div class="form-text"><f:translate extensionName="TypovigilAgent" key="module.field.token.description" /></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <core:icon identifier="actions-save" size="small" />
+                    <f:translate extensionName="TypovigilAgent" key="module.button.save" />
+                </button>
+
+                <f:if condition="{isConfigured}">
+                    <a
+                        href="{be:moduleLink(route: 'site_typovigil_agent', arguments: '{action: \'sendNow\'}')}"
+                        class="btn btn-default"
+                    >
+                        <core:icon identifier="actions-refresh" size="small" />
+                        <f:translate extensionName="TypovigilAgent" key="module.button.sendNow" />
+                    </a>
+                </f:if>
+            </form>
+        </f:else>
+    </f:if>
 </f:section>
 
 </html>

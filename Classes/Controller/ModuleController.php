@@ -47,6 +47,10 @@ final readonly class ModuleController
             'hubUrl' => $config['hubUrl'],
             'token' => $config['token'],
             'isConfigured' => $config['hubUrl'] !== '' && $config['token'] !== '',
+            // ENV values win over the form and survive a deploy; saving the
+            // form in that case would only fill config/system/settings.php,
+            // which is discarded on the next one and never actually used.
+            'fromEnv' => getenv('TYPOVIGIL_AGENT_HUB_URL') !== false && getenv('TYPOVIGIL_AGENT_TOKEN') !== false,
             'lastReportHash' => $this->registry->get('typovigil_agent', 'lastReportHash'),
         ]);
 
@@ -57,6 +61,10 @@ final readonly class ModuleController
     {
         if ($notAdmin = $this->requireAdmin()) {
             return $notAdmin;
+        }
+
+        if (getenv('TYPOVIGIL_AGENT_HUB_URL') !== false && getenv('TYPOVIGIL_AGENT_TOKEN') !== false) {
+            return $this->redirectWithMessage('module.message.fromEnv', ContextualFeedbackSeverity::WARNING);
         }
 
         $body = $request->getParsedBody();
@@ -112,9 +120,11 @@ final readonly class ModuleController
             $config = [];
         }
 
+        // ENV first, same as ReportSender — config/system/settings.php does
+        // not survive a container deploy, the environment does.
         return [
-            'hubUrl' => trim((string)($config['hubUrl'] ?? '')),
-            'token' => trim((string)($config['token'] ?? '')),
+            'hubUrl' => trim((string)(getenv('TYPOVIGIL_AGENT_HUB_URL') ?: ($config['hubUrl'] ?? ''))),
+            'token' => trim((string)(getenv('TYPOVIGIL_AGENT_TOKEN') ?: ($config['token'] ?? ''))),
         ];
     }
 
