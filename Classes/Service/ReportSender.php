@@ -101,12 +101,26 @@ final readonly class ReportSender
         }
 
         // Refuse to send a bearer token over plain http — it would travel readable.
-        if (!str_starts_with($hubUrl, 'https://') && !str_starts_with($hubUrl, 'http://localhost')) {
+        if (!self::isSecureHubUrl($hubUrl)) {
             $this->logger->error('TypoVigil agent: hubUrl must use https', ['hubUrl' => $hubUrl]);
 
             return null;
         }
 
         return [$hubUrl, $token];
+    }
+
+    /**
+     * Shared with SetupController, which validates the hub URL before it ever reaches here.
+     */
+    public static function isSecureHubUrl(string $hubUrl): bool
+    {
+        if (str_starts_with($hubUrl, 'https://')) {
+            return true;
+        }
+
+        $host = parse_url($hubUrl, PHP_URL_HOST);
+
+        return str_starts_with($hubUrl, 'http://') && ($host === 'localhost' || $host === '127.0.0.1');
     }
 }

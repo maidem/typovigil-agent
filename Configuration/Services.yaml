@@ -22,3 +22,9 @@ services:
 
   Maidemde\TypovigilAgent\Controller\ModuleController:
     public: true
+
+  Maidemde\TypovigilAgent\Command\SendReportCommand:
+    tags:
+      - name: 'console.command'
+        command: 'typovigil-agent:report'
+        description: 'Send the package report to the hub now, instead of waiting for the daily scheduler run'

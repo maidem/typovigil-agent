@@ -33,8 +33,8 @@ final readonly class ModuleController
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
-        if (($GLOBALS['BE_USER'] ?? null)?->isAdmin() !== true) {
-            return $this->redirectWithMessage('module.notAdmin', ContextualFeedbackSeverity::ERROR);
+        if ($notAdmin = $this->requireAdmin()) {
+            return $notAdmin;
         }
 
         if (($request->getQueryParams()['action'] ?? '') === 'sendNow') {
@@ -55,8 +55,8 @@ final readonly class ModuleController
 
     public function save(ServerRequestInterface $request): ResponseInterface
     {
-        if (($GLOBALS['BE_USER'] ?? null)?->isAdmin() !== true) {
-            return $this->redirectWithMessage('module.notAdmin', ContextualFeedbackSeverity::ERROR);
+        if ($notAdmin = $this->requireAdmin()) {
+            return $notAdmin;
         }
 
         $body = $request->getParsedBody();
@@ -70,7 +70,7 @@ final readonly class ModuleController
         }
 
         // Same rule the sender enforces: a bearer token must not travel readable.
-        if (!str_starts_with($hubUrl, 'https://') && !str_starts_with($hubUrl, 'http://localhost')) {
+        if (!ReportSender::isSecureHubUrl($hubUrl)) {
             return $this->redirectWithMessage('module.message.insecureHub', ContextualFeedbackSeverity::ERROR);
         }
 
@@ -80,6 +80,15 @@ final readonly class ModuleController
         ]);
 
         return $this->redirectWithMessage('module.message.saved', ContextualFeedbackSeverity::OK);
+    }
+
+    private function requireAdmin(): ?ResponseInterface
+    {
+        if (($GLOBALS['BE_USER'] ?? null)?->isAdmin() === true) {
+            return null;
+        }
+
+        return $this->redirectWithMessage('module.notAdmin', ContextualFeedbackSeverity::ERROR);
     }
 
     private function sendNow(): ResponseInterface

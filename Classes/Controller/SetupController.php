@@ -6,6 +6,7 @@ namespace Maidemde\TypovigilAgent\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Maidemde\TypovigilAgent\Service\ReportSender;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 
@@ -31,7 +32,7 @@ final readonly class SetupController
         $hub = trim((string)($request->getQueryParams()['hub'] ?? ''));
         $token = trim((string)($request->getQueryParams()['token'] ?? ''));
 
-        if ($hub === '' || $token === '' || !str_starts_with($hub, 'https://')) {
+        if ($hub === '' || $token === '' || !ReportSender::isSecureHubUrl($hub)) {
             return new HtmlResponse('Missing or invalid hub/token parameters. The hub URL must use https.', 400);
         }
 
