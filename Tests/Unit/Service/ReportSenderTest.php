@@ -196,4 +196,54 @@ final class ReportSenderTest extends UnitTestCase
 
         self::assertFalse($sender->send());
     }
+
+    public function testSendDoesNotFollowRedirectsAndHonoursTimeout(): void
+    {
+        [$collector, $requestFactory, $registry, $logger] = $this->collaborators();
+        $this->setEnv('https://hub.example.com', 'secret');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(204);
+
+        $requestFactory->expects(self::once())
+            ->method('request')
+            ->with(
+                self::anything(),
+                'POST',
+                self::callback(function (array $options): bool {
+                    self::assertFalse($options['allow_redirects']);
+                    self::assertSame(ReportSender::LISTENER_TIMEOUT, $options['timeout']);
+
+                    return true;
+                })
+            )
+            ->willReturn($response);
+
+        $sender = new ReportSender($collector, $requestFactory, $registry, $logger);
+
+        self::assertTrue($sender->send(timeout: ReportSender::LISTENER_TIMEOUT));
+    }
+
+    public function testSendReturnsFalseWhenTheReportCannotBeBuilt(): void
+    {
+        $packageManager = $this->createMock(PackageManager::class);
+        $packageManager->method('getActivePackages')->willThrowException(new \RuntimeException('broken'));
+        $typo3Version = $this->createMock(Typo3Version::class);
+        $typo3Version->method('getVersion')->willReturn('13.4.0');
+        $requestFactory = $this->createMock(RequestFactory::class);
+        $logger = $this->createMock(LoggerInterface::class);
+        $this->setEnv('https://hub.example.com', 'secret');
+
+        $requestFactory->expects(self::never())->method('request');
+        $logger->expects(self::once())->method('error')->with(self::stringContains('could not build'), self::anything());
+
+        $sender = new ReportSender(
+            new PackageCollector($packageManager, $typo3Version),
+            $requestFactory,
+            $this->createMock(Registry::class),
+            $logger
+        );
+
+        self::assertFalse($sender->send());
+    }
 }

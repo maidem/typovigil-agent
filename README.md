@@ -18,7 +18,7 @@ Die Versionsnummern stammen aus `Composer\InstalledVersions`, sofern verfügbar,
 ## Voraussetzungen
 
 - TYPO3 13.4 oder 14.x
-- PHP 8.1+
+- PHP 8.2+
 - Ein erreichbarer TypoVigil-Hub mit angelegtem Projekt
 
 ## Installation
@@ -43,7 +43,7 @@ wäre nach dem nächsten Deploy kommentarlos wieder weg. Ein solches Modul gab
 es früher; es wurde entfernt, weil es eine funktionierende Eingabe zeigte, die
 beim nächsten Deploy trotzdem verschwand.
 
-Zum Schluss unter **System → Planer** die Aufgabe *TypoVigil: send report* anlegen und täglich ausführen lassen.
+Zum Schluss unter **System → Planer** die Aufgabe *TypoVigil: send report* anlegen und täglich ausführen lassen. Ab TYPO3 14 ist sie ein nativer Aufgabentyp (TCA), unter 13.4 wird sie über `SC_OPTIONS` registriert.
 
 Der Planer selbst braucht einen laufenden Cronjob auf dem Server, sonst wird die Aufgabe nie ausgeführt. Ob einer läuft, zeigt im Planer-Modul der Button *Setup check*. In Container-Umgebungen ist er oft nicht vorhanden und muss eingerichtet werden:
 
@@ -51,7 +51,7 @@ Der Planer selbst braucht einen laufenden Cronjob auf dem Server, sonst wird die
 * * * * * cd /var/www/html && php vendor/bin/typo3 scheduler:run
 ```
 
-Die Hub-URL muss `https` verwenden (`http://localhost` ist für die lokale Entwicklung erlaubt). Über einfaches http verweigert der Agent den Versand, da der Bearer-Token sonst lesbar übertragen würde.
+Die Hub-URL muss `https` verwenden (`http://localhost` und `http://127.0.0.1` sind erlaubt, etwa für einen Hub in derselben Installation). Über einfaches http verweigert der Agent den Versand, da der Bearer-Token sonst lesbar übertragen würde.
 
 ## Zeitpunkt der Übertragung
 
@@ -74,7 +74,7 @@ php vendor/bin/typo3 typovigil-agent:report || true
 ## Technische Details
 
 - **PackageCollector** — sammelt Core-Version und aktive Extensions, bevorzugt die von Composer aufgelösten Versionen aus `Composer\InstalledVersions`
-- **ReportSender** — sendet den Bericht per POST an `<hubUrl>/typovigil/report`, authentifiziert per Bearer-Token; merkt sich einen Hash des letzten Berichts in der `Registry`, um unveränderte Berichte zu überspringen
+- **ReportSender** — sendet den Bericht per POST an `<hubUrl>/typovigil/report`, authentifiziert per Bearer-Token, ohne Redirects zu folgen; ein Fehler beim Zusammenstellen des Berichts bricht die Planer-Aufgabe nicht ab; merkt sich einen Hash des letzten Berichts in der `Registry`, um unveränderte Berichte zu überspringen
 - **SendReportTask** — die Planer-Aufgabe für den täglichen Versand
 - **SendReportCommand** — `typovigil-agent:report`, für den Aufruf aus dem Deploy-Entrypoint
 - **PackageChangeListener** — stößt den Versand an, sobald sich der Extension-Bestand ändert

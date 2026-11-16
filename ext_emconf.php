@@ -7,10 +7,10 @@ $EM_CONF['typovigil_agent'] = [
     'author' => 'Maik Demuth',
     'author_email' => 'hi@maidem.de',
     'state' => 'beta',
-    'version' => '1.0.0',
+    'version' => '2.1.0',
     'constraints' => [
         'depends' => [
-            'php' => '8.1.0-0.0.0',
+            'php' => '8.2.0-0.0.0',
             'typo3' => '13.4.0-14.99.99',
             'scheduler' => '13.4.0-14.99.99',
         ],

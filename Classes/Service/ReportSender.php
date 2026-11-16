@@ -19,6 +19,8 @@ final readonly class ReportSender
     private const REGISTRY_NAMESPACE = 'typovigil_agent';
     private const REGISTRY_KEY = 'lastReportHash';
     private const TIMEOUT = 15;
+    /** The change listener runs inside extension:setup, so a slow hub must not hold it up. */
+    public const LISTENER_TIMEOUT = 5;
 
     public function __construct(
         private PackageCollector $collector,
@@ -29,9 +31,10 @@ final readonly class ReportSender
 
     /**
      * @param bool $onlyOnChange Skip the request when nothing changed since last time
+     * @param int $timeout Seconds to wait for the hub
      * @return bool true when the hub accepted the report, or when there was nothing to send
      */
-    public function send(bool $onlyOnChange = false): bool
+    public function send(bool $onlyOnChange = false, int $timeout = self::TIMEOUT): bool
     {
         $config = $this->configuration();
         if ($config === null) {
@@ -41,8 +44,17 @@ final readonly class ReportSender
         }
 
         [$hubUrl, $token] = $config;
-        $report = $this->collector->collect();
-        $hash = hash('sha256', json_encode($report, JSON_THROW_ON_ERROR));
+
+        // A failing collector must not take a scheduler run or a deploy down with it.
+        try {
+            $body = json_encode($this->collector->collect(), JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            $this->logger->error('TypoVigil agent: could not build the report', ['exception' => $e->getMessage()]);
+
+            return false;
+        }
+
+        $hash = hash('sha256', $body);
 
         if ($onlyOnChange && $this->registry->get(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY) === $hash) {
             return true;
@@ -53,12 +65,14 @@ final readonly class ReportSender
                 rtrim($hubUrl, '/') . '/typovigil/report',
                 'POST',
                 [
-                    'timeout' => self::TIMEOUT,
+                    'timeout' => $timeout,
+                    // The bearer token must never follow a redirect somewhere else.
+                    'allow_redirects' => false,
                     'headers' => [
                         'Authorization' => 'Bearer ' . $token,
                         'Content-Type' => 'application/json',
                     ],
-                    'body' => json_encode($report, JSON_THROW_ON_ERROR),
+                    'body' => $body,
                 ]
             );
         } catch (\Throwable $e) {

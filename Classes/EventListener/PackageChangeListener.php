@@ -20,12 +20,12 @@ final readonly class PackageChangeListener
     #[AsEventListener('typovigil-agent/package-activated')]
     public function onActivation(AfterPackageActivationEvent $event): void
     {
-        $this->reportSender->send(onlyOnChange: true);
+        $this->reportSender->send(onlyOnChange: true, timeout: ReportSender::LISTENER_TIMEOUT);
     }
 
     #[AsEventListener('typovigil-agent/package-deactivated')]
     public function onDeactivation(AfterPackageDeactivationEvent $event): void
     {
-        $this->reportSender->send(onlyOnChange: true);
+        $this->reportSender->send(onlyOnChange: true, timeout: ReportSender::LISTENER_TIMEOUT);
     }
 }
