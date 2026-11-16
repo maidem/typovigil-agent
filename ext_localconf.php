@@ -9,7 +9,7 @@ defined('TYPO3') or die('Access denied.');
 if ((new \TYPO3\CMS\Core\Information\Typo3Version())->getMajorVersion() < 14) {
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][\Maidemde\TypovigilAgent\Task\SendReportTask::class] = [
         'extension' => 'typovigil_agent',
-        'title' => 'TypoVigil: send report',
-        'description' => 'Reports the installed TYPO3 version and extensions to the configured hub.',
+        'title' => 'LLL:EXT:typovigil_agent/Resources/Private/Language/locallang.xlf:task.sendReport.title',
+        'description' => 'LLL:EXT:typovigil_agent/Resources/Private/Language/locallang.xlf:task.sendReport.description',
     ];
 }

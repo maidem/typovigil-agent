@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="locallang.xlf" product-name="typovigil_agent">
+        <body>
+            <trans-unit id="task.sendReport.title" resname="task.sendReport.title">
+                <source>TypoVigil: send report</source>
+            </trans-unit>
+            <trans-unit id="task.sendReport.description" resname="task.sendReport.description">
+                <source>Reports the installed TYPO3 version and extensions to the configured hub.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

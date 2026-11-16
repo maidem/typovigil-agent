@@ -3,3 +3,4 @@
 /public/
 /composer.lock
 /.phpunit.result.cache
+/.Build/

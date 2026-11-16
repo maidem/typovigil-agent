@@ -12,8 +12,8 @@ defined('TYPO3') or die();
 if ((new Typo3Version())->getMajorVersion() >= 14) {
     ExtensionManagementUtility::addRecordType(
         [
-            'label' => 'TypoVigil: send report',
-            'description' => 'Reports the installed TYPO3 version and extensions to the configured hub.',
+            'label' => 'LLL:EXT:typovigil_agent/Resources/Private/Language/locallang.xlf:task.sendReport.title',
+            'description' => 'LLL:EXT:typovigil_agent/Resources/Private/Language/locallang.xlf:task.sendReport.description',
             'value' => SendReportTask::class,
             'icon' => 'mimetypes-x-tx_scheduler_task_group',
             'group' => 'typovigil_agent',

@@ -6,6 +6,7 @@ namespace Maidemde\TypovigilAgent\Tests\Unit\Service;
 
 use Maidemde\TypovigilAgent\Service\PackageCollector;
 use Maidemde\TypovigilAgent\Service\ReportSender;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,8 @@ use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Registry;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+// collaborators() hands every test the same set of mocks; each test only configures the ones it cares about
+#[AllowMockObjectsWithoutExpectations]
 final class ReportSenderTest extends UnitTestCase
 {
     /**
@@ -60,9 +63,9 @@ final class ReportSenderTest extends UnitTestCase
      */
     private function collaborators(): array
     {
-        $packageManager = $this->createMock(PackageManager::class);
+        $packageManager = $this->createStub(PackageManager::class);
         $packageManager->method('getActivePackages')->willReturn([]);
-        $typo3Version = $this->createMock(Typo3Version::class);
+        $typo3Version = $this->createStub(Typo3Version::class);
         $typo3Version->method('getVersion')->willReturn('13.4.0');
 
         return [
@@ -127,7 +130,7 @@ final class ReportSenderTest extends UnitTestCase
         $this->setEnv('https://hub.example.com', 'secret');
 
         $hash = hash('sha256', json_encode(self::STUB_REPORT, JSON_THROW_ON_ERROR));
-        $registry->method('get')->with('typovigil_agent', 'lastReportHash')->willReturn($hash);
+        $registry->expects(self::once())->method('get')->with('typovigil_agent', 'lastReportHash')->willReturn($hash);
 
         $requestFactory->expects(self::never())->method('request');
 
@@ -141,7 +144,7 @@ final class ReportSenderTest extends UnitTestCase
         [$collector, $requestFactory, $registry, $logger] = $this->collaborators();
         $this->setEnv('https://hub.example.com/', 'secret-token');
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
 
         $requestFactory->expects(self::once())
@@ -170,7 +173,7 @@ final class ReportSenderTest extends UnitTestCase
         [$collector, $requestFactory, $registry, $logger] = $this->collaborators();
         $this->setEnv('https://hub.example.com', 'secret');
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(401);
         $requestFactory->method('request')->willReturn($response);
 
@@ -202,7 +205,7 @@ final class ReportSenderTest extends UnitTestCase
         [$collector, $requestFactory, $registry, $logger] = $this->collaborators();
         $this->setEnv('https://hub.example.com', 'secret');
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(204);
 
         $requestFactory->expects(self::once())
@@ -226,9 +229,9 @@ final class ReportSenderTest extends UnitTestCase
 
     public function testSendReturnsFalseWhenTheReportCannotBeBuilt(): void
     {
-        $packageManager = $this->createMock(PackageManager::class);
+        $packageManager = $this->createStub(PackageManager::class);
         $packageManager->method('getActivePackages')->willThrowException(new \RuntimeException('broken'));
-        $typo3Version = $this->createMock(Typo3Version::class);
+        $typo3Version = $this->createStub(Typo3Version::class);
         $typo3Version->method('getVersion')->willReturn('13.4.0');
         $requestFactory = $this->createMock(RequestFactory::class);
         $logger = $this->createMock(LoggerInterface::class);
